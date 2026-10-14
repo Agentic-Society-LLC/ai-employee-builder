@@ -50,7 +50,7 @@ Six phases, about thirty-four questions (5 · 5 · 5 · 8 · 4 · 7). The full b
 | 0. You and the company | name, company, offer, customers, team, voice | USER.md, SOUL.md |
 | 1. The role | the job or gap, the seat on the org chart, the outcome, 2-3 KPIs, the owner | AGENTS.md, PRD |
 | 2. The dream hire | the résumé (where they worked, what they read, how they think), great vs mediocre, the judgement boundary, the name, the self-introduction | SOUL.md, IDENTITY.md, evals |
-| 3. Jobs, routines, triggers | 3-6 recurring jobs; for each: schedule or event, one source, one output and destination, approver, what breaks if it ran twice | ROUTINES.md, triggers.md, skills/ |
+| 3. Jobs, routines, triggers | the 3-6 recurring jobs; the first one in full (schedule or event, one source, one output and destination, approver, what breaks if it ran twice), the others in one line each | ROUTINES.md, triggers.md, skills/ |
 | 4. Tools and access | "what do you use here" per job; connected today or not; read or act | TOOLS.md |
 | 5. Boundaries and platform | tech level 1-10, intent to use APIs/MCPs/CLIs, laptop or cloud, never-do list, audience, who notices and the stop button, spend ceiling | platform, launch gate, non-goals |
 
@@ -64,16 +64,19 @@ Read **`references/platforms.md`** ("Routing"). The rule: tech level 1-6, or no 
 
 When Phase 5 ends, fill this contract from the answers and show it as a table. Label every row **DECIDED** (they said it) or **ASSUMED** (you proposed it). Then print the employee's self-introduction in its own voice. Ask them to confirm or correct. **Write no files until they confirm.**
 
+The row labels are in the CEO's language; the technical name is in brackets for you, never shown:
+
 ```
-Agent name and title · Seat · Business outcome · KPIs · Human owner
-First job (one schedule or event, one source, one output, one approver)
-Other recurring jobs · Triggers (event → action → approval)
-Cadence in local time, held across DST · Claim window (one run per day / week / event)
-Approval boundary · Widest audience (internal / team / public) · Max external actions per run, and why
-Never does → tools deliberately not granted
-Alert reader and response time · Stop button (parks this employee, no developer, and who else may press it)
-Spend ceiling per run · Platform and tier, with reason and runner-up · Where it lives
-Instruction store (where the employee reads its files on that platform)
+Name and title · Seat · What it is here to achieve · How we will know (2-3 numbers) · Who it reports to
+First job (one schedule or event, one source, one output, one reader)
+Other jobs, one line each · What starts things on its own (event → action → who approves)
+When it runs, in local time, held when the clocks change · Never twice: one run per day / week / event [claim window]
+What needs a yes before it goes out [approval boundary] · Who may ever see its work: only you / the team / customers [audience]
+How much one run may do, and why [action ceiling]
+What it must never do → the tools it simply does not get
+Who notices if it misbehaves, and how fast · The stop button (parks it, no developer, and who else may press it)
+What one run may cost before it stops and asks [spend ceiling] · Platform and tier, with the reason and the runner-up · Where it lives
+Where it reads its instructions on that platform [instruction store]
 ```
 
 The first job must pass the first-job test: *"Every <schedule, or every time <event> happens>, <Name> reads <one source>, creates <one output>, sends it to <one declared destination> for approve / reject / revise, and records the run."* One destination can be two internal readers (the rep and the owner); it cannot be a customer. If it needs "and also", cut it. An event-driven first job is built as a polling routine with a claim per event (`interview.md`, Phase 3).
@@ -82,7 +85,7 @@ The first job must pass the first-job test: *"Every <schedule, or every time <ev
 
 Read **`references/packet.md`** and write every file, in the CEO's company context, to `ai-employee/<name>/`:
 
-`SOUL.md` · `IDENTITY.md` · `USER.md` · `AGENTS.md` · `TOOLS.md` · `ROUTINES.md` · `triggers.md` · `skills/<job>.md` (one per job) · `MEMORY.md` · `docs/PRD.md` · `docs/runbook.md` · `docs/launch-gate.md` · `README.md` (the org-chart card)
+`SOUL.md` · `IDENTITY.md` · `USER.md` · `AGENTS.md` · `TOOLS.md` · `ROUTINES.md` · `triggers.md` · `skills/<job>.md` (one per job) · `MEMORY.md` · `docs/PRD.md` · `docs/runbook.md` · `docs/launch-gate.md` (advanced tier only; on the simple tier it is the runbook's last section) · `README.md` (the org-chart card)
 
 Then, for Muse, Grok or Dots, render the single instruction block from the packet (`packet.md`, "Rendering") into `rendered/<platform>-instructions.md`. For Hermes or OpenClaw, the files go where `platforms.md` says. The packet is the source of truth on every platform; the rendering is derived.
 
@@ -117,7 +120,7 @@ ladder[]   {rung, label, status: todo | current | earned, note}
 log[]      {at, what}
 ```
 
-Update it: after every answer (`questionsDone`, and whatever the answer settled: `employee`, `contract`, `routines`, `tools`); at the playback (`contract[].source`, `phases.playback`); as each file is written and confirmed; as each tool is connected and verified; after every go-live step with its evidence line; and with a `log` line whenever something real happens (the name chosen, the first real output, the stop button tested, a promotion). The bar is computed from the data; you never set a percentage.
+Update it: after every answer (`questionsDone`, and whatever the answer settled: `employee`, `contract`, `routines`, `tools`; the self-introduction from 2.5 goes into `employee.intro` the moment the CEO approves it); at the platform decision (`platform.*`, and `phases.golive.minutes`: 25 on the simple tier, 180 on the advanced tier, so "minutes left" is honest); at the playback (`contract[].source`, `phases.playback`); as each file is written and confirmed; as each tool is connected and verified; after every go-live step with its evidence line; and with a `log` line whenever something real happens (the name chosen, the first real output, the stop button tested, a promotion). The bar is computed from the data; you never set a percentage.
 
 ## Output discipline
 
@@ -126,7 +129,9 @@ Update it: after every answer (`questionsDone`, and whatever the answer settled:
 - Three different moments, three different phrases, so the tracker's log is unambiguous: 2.5 "Is that the hire?" (the introduction); after the packet "Does this read like the person you hired?" (rung 0); after the first hand-run output "Is that the output you wanted?" (rung 1).
 - Every stage ends with evidence the CEO can see, not "done".
 - When something cannot be verified from the platform's docs, say so, mark it VERIFY, and prefer the safer reading.
+- When a step can only be judged tomorrow (the first scheduled run), say so, leave that step `doing` in the tracker, and tell the CEO the two words to come back with: "it ran" or "it didn't". Resume mode picks it up from there.
 - When the hire is live: tell the CEO to run it for a fortnight before hiring the second one. The corrections in that time are worth more than anything built instead. Then point them to Improve mode.
+- The second hire is faster: reuse USER.md and the voice from the first, skip Phase 0, create `ai-employee/<new-name>/` with its own tracker, and give the two employees different names and seats.
 
 ## Files in this skill
 

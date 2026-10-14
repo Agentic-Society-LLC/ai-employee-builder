@@ -6,7 +6,7 @@ Write the packet to `ai-employee/<employee-name>/` in the CEO's folder (lowercas
 
 Rules for every file:
 - **Written from the interview, not from the template.** The template shows the shape; every sentence inside is this company's. A packet that could belong to any company has failed.
-- **Plain prose, second person to the employee** ("You are Nova…", "You never…"). No marketing language.
+- **Plain prose, in the right person.** SOUL.md and IDENTITY.md are in the employee's own first person ("I am Nova…", "I never…"), because the employee reads them as itself and speaks them on every platform. AGENTS.md, TOOLS.md, ROUTINES.md and the skill files are instructions to the employee in the second person ("You read…", "You never…"). USER.md and the docs are plain third person. No marketing language anywhere.
 - **Decisions, not aspirations.** "Sends the brief to Maria by email at 7am" beats "ensures timely communication".
 - **Short.** SOUL.md and AGENTS.md under 80 lines each. A long file is read less carefully by the model, not more.
 - **The name on every output.** Every file reinforces that the employee signs its work with its own name and never acts as the CEO.
@@ -189,7 +189,7 @@ One store. Four verbs. <Owner> is the only one who promotes or retires a lesson.
 
 ## docs/PRD.md, docs/runbook.md, docs/launch-gate.md
 
-Sized to the tier. On the simple tier each is one screen:
+Sized to the tier. On the **simple tier write two files, not three**: `docs/PRD.md` and `docs/runbook.md`, with the launch gate as the last section of the runbook ("Before it reaches anyone but me"), because a non-technical owner will keep one runbook open and will not open a third document. On the advanced tier all three exist and `launch-gate.md` is the one file CI reads. Each is one screen:
 - **PRD.md:** the job, the source, the output, the owner, the non-goals, the acceptance checks ("the brief arrives by 7:15 weekdays", "zero inquiries produces an empty brief, not silence"), the change history.
 - **runbook.md:** how to run it now, where the run log is, what an alert looks like, when a retry is safe, **how to park it without a developer**, how to resume, who to call.
 - **launch-gate.md:** the single checklist that must be true before the employee is promoted to a wider audience or to acting alone. On Hermes/OpenClaw it is enforced by a script in CI (see `go-live.md`); on the simple tier it is a checklist the owner initials, and the file says so honestly.

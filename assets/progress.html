@@ -428,6 +428,7 @@
   const minsLeft = Math.round(qLeft * 1.3 + laterMin + (pb && pb.status !== "done" ? (pb.minutes || 4) : 0));
 
   // Hero
+  document.title = (emp.name ? emp.name + (emp.title ? " · " + emp.title : "") : "AI Employee") + " · Progress";
   $("#eb-company").textContent = ceo.company ? (ceo.name ? ceo.name + " · " + ceo.company : ceo.company) : "Hiring an AI employee";
   $("#eb-platform").textContent = plat.choice ? "Platform: " + plat.choice : "Platform: to decide";
   $("#eb-model").textContent = plat.model ? "Built with " + plat.model + (plat.runtimeModel ? " · runs on " + plat.runtimeModel : "") : "";

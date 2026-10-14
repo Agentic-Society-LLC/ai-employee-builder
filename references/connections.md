@@ -43,6 +43,8 @@ On a hosted platform the first job's source may simply not be on the connector l
 
 When the event source is not something the platform can watch itself (Stripe, a form tool, the CRM), the usual path is: the source → Composio or Zapier trigger → the employee (a webhook on Hermes/OpenClaw, or a hub-native action on the simple platforms). Set the trigger to **human-first**: the action is "draft and notify", never "send", until promoted. Give the trigger a per-event claim (the event id) so a replay does not act twice.
 
+For tool *access* through a hub on the advanced tier, both hubs publish MCP endpoints: Composio `https://connect.composio.dev/mcp` (header `x-consumer-api-key`; or a per-server URL under `backend.composio.dev/v3/mcp/…` with `x-api-key`), Zapier `https://mcp.zapier.com/api/v1/connect` (`Authorization: Bearer <connection token>`). The token goes in the platform's `.env`, referenced by name; see `platforms.md` for the exact `mcp_servers` / `openclaw mcp add` form.
+
 ## When the CEO gets stuck here
 
 This step defeats more first builds than any other. If the permission screen does not match the steps given, ask the CEO to paste what they see (never a secret), re-derive the steps from the real screen, and do not grant broader access to move on. Being stuck here is not being behind.

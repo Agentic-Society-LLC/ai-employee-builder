@@ -68,7 +68,7 @@ Read the matching profile in `role-library.md` before this phase. Then present i
 **2.4 What do you want to call it?** Offer three names from the profile and one built from what it does. The CEO will be talking to it and about it for a long time. The name goes on every output.
 - Follow-up: "Say its name in a sentence to your team. Does it fit?"
 
-**2.5 Listen to it introduce itself.** Write the self-introduction in the employee's own voice, two to four sentences: name, title, what it owns, how it works, what it will always check with the CEO. Ask: "Is that the hire?" Revise until yes. This line goes at the top of SOUL.md and is the first thing the employee says on every platform.
+**2.5 Listen to it introduce itself.** Write the self-introduction in the employee's own voice, two to four sentences: name, title, what it owns, how it works, what it will always check with the CEO. Ask: "Is that the hire?" Revise until yes. This line goes at the top of SOUL.md, into the tracker's `employee.intro`, and is the first thing the employee says on every platform.
 
 ---
 
@@ -139,7 +139,7 @@ Close the phase by listing every tool with read/act and connected/not, and askin
 - Default: the owner, same business day, via the platform's pause switch, marked ASSUMED.
 
 **5.7 What is it allowed to spend per run, in time or money, before it stops and asks?** A cost or token ceiling, or "stop after N minutes". Keep it low for the first job.
-- Default: a low fixed ceiling the platform supports, marked ASSUMED.
+- Default, marked ASSUMED: on the simple tier "one task, stop after 10 minutes, never start a second pass"; on the advanced tier "one model call per item, about $1 per run, and stop at the first item that fails".
 
 ---
 
