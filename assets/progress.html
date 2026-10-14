@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Employee · Progress</title>
+<!--
+  AI EMPLOYEE PROGRESS - the CEO's view of a hire in progress.
+
+  One file. No server, no install. Open it in a browser (double-click). The
+  CEO's AI keeps it current by editing ONLY the JSON inside
+  <script id="employee-data"> below; the page renders everything from that.
+  Turn on "Auto-refresh" (top right) and the page reloads itself every 15
+  seconds, so the bar moves while the interview happens.
+
+  Three views: Progress (the bar, time left, the employee card filling in,
+  the contract with DECIDED/ASSUMED rows), Packet (files, tools, routines,
+  triggers), Go-live (the tier's checklist with evidence). Print the Packet
+  view to get the employee's one-pager. Light and dark follow the system;
+  the sun/moon button overrides.
+
+  Rules for the AI are in SKILL.md ("The tracker"). The schema is documented
+  in the comment above the data block. Keep every key.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" />
+<style>
+  :root {
+    --bg: #f5f5f7; --surface: #ffffff; --surface-2: #fafafa;
+    --ink: #1d1d1f; --ink-2: #515154; --ink-3: #86868b;
+    --line: rgba(0,0,0,0.08); --line-2: rgba(0,0,0,0.14);
+    --accent: #2f6bff; --accent-2: #6b4dff; --accent-soft: rgba(47,107,255,0.10);
+    --good: #1f9d55; --good-soft: rgba(31,157,85,0.12); --warn: #8a6d1f; --warn-soft: rgba(138,109,31,0.10);
+    --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
+    --font: "Geist", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --r: 18px; --r-sm: 10px; color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #000; --surface: #161618; --surface-2: #1f1f22; --ink: #f5f5f7; --ink-2: #c7c7cc; --ink-3: #8e8e93;
+      --line: rgba(255,255,255,0.10); --line-2: rgba(255,255,255,0.18); --accent: #5b8cff; --accent-2: #8f7bff; --accent-soft: rgba(91,140,255,0.16);
+      --good: #4cd080; --good-soft: rgba(76,208,128,0.14); --warn: #d9b85a; --warn-soft: rgba(217,184,90,0.12); --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.35);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #000; --surface: #161618; --surface-2: #1f1f22; --ink: #f5f5f7; --ink-2: #c7c7cc; --ink-3: #8e8e93;
+    --line: rgba(255,255,255,0.10); --line-2: rgba(255,255,255,0.18); --accent: #5b8cff; --accent-2: #8f7bff; --accent-soft: rgba(91,140,255,0.16);
+    --good: #4cd080; --good-soft: rgba(76,208,128,0.14); --warn: #d9b85a; --warn-soft: rgba(217,184,90,0.12); --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.35);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  button { font: inherit; color: inherit; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 76rem; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px) 96px; }
+
+  /* Header */
+  .top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 22px 0 10px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand svg { height: 22px; width: auto; color: var(--ink); }
+  .brand span { font-size: 12px; color: var(--ink-3); letter-spacing: 0.02em; }
+  .seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); justify-self: center; }
+  .seg button { border: 0; background: transparent; color: var(--ink-2); padding: 7px 18px; border-radius: 999px; cursor: pointer; font-weight: 500; font-size: 13.5px; transition: background .15s, color .15s; }
+  .seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  .tools { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  .icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); cursor: pointer; color: var(--ink-2); }
+  .icon[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .icon svg { width: 16px; height: 16px; }
+  #theme .moon { display: none; }
+  :root[data-theme="dark"] #theme .sun { display: none; }
+  :root[data-theme="dark"] #theme .moon { display: block; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #theme .sun { display: none; } :root:not([data-theme="light"]) #theme .moon { display: block; } }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Hero: the bar */
+  .hero { padding: 36px 0 26px; }
+  .hero .eyebrow { margin: 0 0 10px; font-size: 13px; color: var(--ink-3); display: flex; gap: 14px; flex-wrap: wrap; }
+  .hero h1 { margin: 0; font-size: clamp(1.5rem, 3vw, 2.3rem); font-weight: 600; letter-spacing: -0.025em; line-height: 1.18; text-wrap: balance; }
+  .hero h1 .what { color: var(--accent); }
+  .sample { margin: 8px 0 0; font-size: 13px; color: var(--ink-3); }
+  .sample code { font-family: var(--mono); font-size: 12px; }
+  .barwrap { margin: 22px 0 0; }
+  .barline { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .barline .pct { font-size: 2.6rem; font-weight: 600; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .barline .pct small { font-size: 1rem; color: var(--ink-3); font-weight: 500; letter-spacing: 0; margin-left: 6px; }
+  .barline .left { font-size: 14px; color: var(--ink-2); text-align: right; }
+  .barline .left b { color: var(--ink); font-weight: 500; }
+  .bar { height: 14px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; position: relative; }
+  .bar > i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .8s cubic-bezier(.2,.7,.2,1); }
+  .bar.done > i { background: var(--good); }
+  .steps { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 10px; }
+  .step { font-size: 11.5px; color: var(--ink-3); padding-top: 8px; border-top: 2px solid var(--line-2); line-height: 1.3; }
+  .step b { display: block; font-weight: 500; color: var(--ink-2); font-size: 12px; }
+  .step.done { border-top-color: var(--good); }
+  .step.done b { color: var(--good); }
+  .step.active { border-top-color: var(--accent); }
+  .step.active b { color: var(--accent); }
+  .step .q { font-family: var(--mono); font-size: 11px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: repeat(4, 1fr); } }
+
+  /* Two-column body */
+  .grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border-radius: var(--r); padding: 22px 24px; box-shadow: var(--shadow); }
+  .panel h2 { margin: 0 0 14px; font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); display: flex; justify-content: space-between; align-items: baseline; }
+  .panel h2 .n { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0; text-transform: none; }
+
+  /* Employee card */
+  .emp { display: grid; grid-template-columns: 72px 1fr; gap: 18px; align-items: start; }
+  .blob { width: 72px; height: 72px; border-radius: 42% 58% 55% 45% / 52% 46% 54% 48%; background: radial-gradient(circle at 32% 28%, #9bb8ff 0, var(--accent) 48%, #1f49c9 100%); box-shadow: 0 10px 24px rgba(47,107,255,0.35), inset 0 -6px 12px rgba(0,0,0,0.18); position: relative; }
+  .blob::before, .blob::after { content: ""; position: absolute; top: 38%; width: 9px; height: 18px; border-radius: 6px; background: #fff; }
+  .blob::before { left: 36%; } .blob::after { left: 52%; }
+  .blob.empty { background: var(--surface-2); border: 1px dashed var(--line-2); box-shadow: none; }
+  .blob.empty::before, .blob.empty::after { background: var(--line-2); }
+  .emp .name { font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+  .emp .title { color: var(--ink-2); font-size: 14px; margin-top: 2px; }
+  .emp .intro { margin: 12px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--ink); border-left: 2px solid var(--accent); padding-left: 12px; }
+  .emp .intro.ph, .ph { color: var(--ink-3); font-style: italic; border-left-color: var(--line-2); }
+  .kv { display: grid; grid-template-columns: 9rem 1fr; gap: 6px 14px; margin: 14px 0 0; font-size: 13.5px; }
+  .kv dt { color: var(--ink-3); margin: 0; } .kv dd { margin: 0; color: var(--ink); }
+  .kv dd.ph { font-style: italic; color: var(--ink-3); }
+
+  /* Contract table */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-weight: 500; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); padding: 0 0 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:first-child { color: var(--ink-2); white-space: nowrap; width: 11rem; }
+  tr:last-child td { border-bottom: 0; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); background: var(--surface-2); white-space: nowrap; }
+  .tag.decided { color: var(--good); background: var(--good-soft); border-color: transparent; }
+  .tag.assumed { color: var(--warn); background: var(--warn-soft); border-color: transparent; }
+  .tag.open { color: var(--ink-3); }
+  .tag.read { color: var(--ink-2); } .tag.act { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+  .note { font-size: 13px; color: var(--ink-3); margin: 12px 0 0; }
+
+  /* Checklists */
+  .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .list li { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .list li:first-child { border-top: 0; }
+  .list .dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line-2); display: inline-grid; place-items: center; font-size: 10px; color: #fff; transform: translateY(2px); }
+  .list .ok .dot { background: var(--good); border-color: var(--good); }
+  .list .ok .dot::after { content: "✓"; }
+  .list .mid .dot { border-color: var(--accent); background: var(--accent-soft); }
+  .list .mid .dot::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .list .main { min-width: 0; }
+  .list .main small { display: block; color: var(--ink-3); font-size: 12.5px; margin-top: 1px; }
+  .list .ok .main { color: var(--ink-2); }
+  .list .ev { font-size: 12px; color: var(--ink-3); font-family: var(--mono); text-align: right; max-width: 14rem; }
+  .list code { font-family: var(--mono); font-size: 12.5px; }
+  .empty { font-size: 13px; color: var(--ink-3); padding: 6px 0; }
+  .stack { display: grid; gap: 24px; }
+
+  /* Views */
+  .view[hidden] { display: none !important; }
+  .nums { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 0 0 28px; }
+  .num { padding: 18px 20px 18px 20px; border-left: 1px solid var(--line); min-width: 0; }
+  .num:first-child { border-left: 0; padding-left: 0; }
+  .num .k { font-size: 12px; color: var(--ink-3); margin-bottom: 6px; }
+  .num .v { font-size: 1.9rem; font-weight: 600; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .num .v small { font-size: 0.9rem; font-weight: 500; color: var(--ink-3); margin-left: 6px; letter-spacing: 0; }
+  .num .s { font-size: 13px; color: var(--ink-2); margin-top: 8px; }
+  @media (max-width: 760px) { .nums { grid-template-columns: repeat(2, 1fr); } .num:nth-child(3) { border-left: 0; padding-left: 0; } .num { padding-left: 16px; } }
+
+  .log { list-style: none; margin: 0; padding: 0; }
+  .log li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 16px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .log li .t { font-family: var(--mono); font-size: 12px; color: var(--ink-3); padding-top: 3px; }
+  .foot { margin: 56px 0 0; padding-top: 18px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-3); }
+
+  @media (max-width: 720px) { .top { grid-template-columns: 1fr auto; } .top .seg { grid-column: 1 / -1; justify-self: stretch; display: grid; grid-auto-flow: column; } .tools { grid-row: 1; grid-column: 2; } }
+  @media print {
+    body { background: #fff; color: #000; font-size: 12.5px; }
+    .top, .foot, .sample, .view-hint { display: none !important; }
+    .panel { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+    .bar > i { background: #2f6bff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .wrap { padding: 0; max-width: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="8.2" y="8.5" width="2.6" height="6" rx="1.3" fill="currentColor"/><rect x="13.2" y="8.5" width="2.6" height="6" rx="1.3" fill="currentColor"/></svg>
+      <span>Agentic Society · AI Employee Builder</span>
+    </div>
+    <nav class="seg" role="tablist" aria-label="View">
+      <button role="tab" data-view="progress" aria-selected="true">Progress</button>
+      <button role="tab" data-view="packet" aria-selected="false">Packet</button>
+      <button role="tab" data-view="golive" aria-selected="false">Go-live</button>
+    </nav>
+    <div class="tools">
+      <button class="icon" id="auto" aria-pressed="false" title="Auto-refresh: reload every 15 seconds so the bar moves while your AI works" aria-label="Auto-refresh">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+      </button>
+      <button class="icon" id="theme" title="Light / dark" aria-label="Toggle light or dark">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <button class="icon" onclick="window.print()" title="Print / save as PDF" aria-label="Print">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <p class="eyebrow"><span id="eb-company"></span><span id="eb-platform"></span><span id="eb-model"></span></p>
+    <h1 id="h1"></h1>
+    <p class="sample" id="sample" hidden>Sample data. Your AI replaces it as the interview runs (<code>"sample": false</code>).</p>
+    <div class="barwrap">
+      <div class="barline">
+        <div class="pct"><span id="pct">0</span>%<small id="pct-k">hired</small></div>
+        <div class="left" id="left"></div>
+      </div>
+      <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+      <div class="steps" id="steps"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-progress">
+    <div class="grid">
+      <div class="stack">
+        <div class="panel">
+          <h2>The hire <span class="n" id="emp-k"></span></h2>
+          <div class="emp">
+            <div class="blob" id="blob"></div>
+            <div>
+              <div class="name" id="emp-name"></div>
+              <div class="title" id="emp-title"></div>
+              <p class="intro" id="emp-intro"></p>
+              <dl class="kv" id="emp-kv"></dl>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>What is happening now</h2>
+          <ul class="log" id="log-now"></ul>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>The contract <span class="n" id="con-k"></span></h2>
+        <table id="contract"></table>
+        <p class="note">DECIDED: you said it. ASSUMED: your AI proposed it and you have not changed it yet. Every ASSUMED row is a decision made on your behalf; read them.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-packet" hidden>
+    <div class="nums" id="pk-nums"></div>
+    <div class="grid">
+      <div class="stack">
+        <div class="panel"><h2>Files <span class="n" id="files-k"></span></h2><ul class="list" id="files"></ul></div>
+        <div class="panel"><h2>Tools <span class="n" id="tools-k"></span></h2><ul class="list" id="tools"></ul><p class="note">Read lets it see. Act lets it change. Everything starts read-only until promoted.</p></div>
+      </div>
+      <div class="stack">
+        <div class="panel"><h2>Routines <span class="n" id="rout-k"></span></h2><ul class="list" id="routines"></ul></div>
+        <div class="panel"><h2>Triggers <span class="n" id="trig-k"></span></h2><ul class="list" id="triggers"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-golive" hidden>
+    <div class="nums" id="gl-nums"></div>
+    <div class="grid">
+      <div class="panel"><h2>Go-live checklist <span class="n" id="gl-k"></span></h2><ul class="list" id="golive"></ul><p class="note" id="gl-note"></p></div>
+      <div class="stack">
+        <div class="panel"><h2>Autonomy ladder</h2><ul class="list" id="ladder"></ul></div>
+        <div class="panel"><h2>Log</h2><ul class="log" id="log-all"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>Agentic Society · agenticsociety.com</span>
+    <span>Your AI edits the data block in this file. You just refresh.</span>
+  </footer>
+</div>
+
+<!--
+  DATA. The AI edits ONLY this block. Keep every key.
+
+  sample     true until the data is the CEO's; then false.
+  ceo        name, company, voice[] (three words), timezone.
+  employee   name, title, seat (marketing | operations | sales | client-success | other),
+             intro (the self-introduction in its own voice), outcome, kpis[], owner.
+  platform   choice (Muse | Grok | Dots | Hermes | OpenClaw | ""), tier (simple | advanced | ""),
+             reason, runnerUp, techLevel (1-10 or null), model (the model running this build,
+             e.g. "Opus 5.5"), runtimeModel (what the employee runs on: the platform's own on
+             Muse / Grok / Dots, or e.g. "claude-opus-5-5" on Hermes / OpenClaw).
+  phases     the interview and build phases, in order. id, label, questionsTotal,
+             questionsDone, status: todo | active | done, minutes (estimate for the whole phase).
+             Phases 0-5 are the interview, "playback" is the contract confirmation,
+             "packet" is writing the files, "golive" is the tier's checklist.
+  contract   the agent contract, one row per field: field, value, source: decided | assumed | open.
+  files      the packet: path, status: todo | drafted | confirmed.
+  tools      name, scope: read | act, status: todo | connected | verified, via (connector | MCP | hub | CLI | API key).
+  routines   job, when (words, local), cron, source, output, deliverTo, approver, status: planned | set | verified.
+  triggers   when, then, approval (human-first | promoted), status: planned | set | verified.
+  goLive     the tier's steps: step, status: todo | doing | done, evidence (what proved it).
+  ladder     the earned-autonomy rungs: rung, label, status: todo | current | earned, note.
+  log        {at, what}, newest last. "at" is a short local time or date.
+
+  Progress = the weighted mean of: interview questions answered (45%), contract
+  confirmed (10%), files confirmed (15%), tools verified (10%), go-live steps
+  done (20%). "Minutes left" = unanswered questions x 1.3 + minutes left in
+  the packet and go-live phases.
+-->
+<script id="employee-data" type="application/json">
+{
+  "sample": true,
+  "ceo": { "name": "Dana", "company": "Northstar Coaching", "voice": ["warm", "direct", "plain"], "timezone": "America/Chicago" },
+  "employee": {
+    "name": "Nova", "title": "AI Client Success Manager", "seat": "client-success",
+    "intro": "Hi, I'm Nova, Client Success Manager at Northstar Coaching. I keep every client's first month on track and notice when anyone starts to drift. I draft, Dana approves, and I sign everything with my own name.",
+    "outcome": "Every new client has a great first month and nobody drifts out unnoticed.",
+    "kpis": ["Onboarding steps done by day 7", "At-risk clients contacted within 48h", "Monthly churn"],
+    "owner": "Dana"
+  },
+  "platform": { "choice": "Grok", "tier": "simple", "reason": "Tech level 4, no plans to wire APIs yet; needs scheduled routines, Gmail and a sheet.", "runnerUp": "Muse", "techLevel": 4, "model": "Opus 5.5", "runtimeModel": "the platform's own" },
+  "phases": [
+    { "id": "p0", "label": "You and the company", "questionsTotal": 5, "questionsDone": 5, "status": "done", "minutes": 6 },
+    { "id": "p1", "label": "The role", "questionsTotal": 5, "questionsDone": 5, "status": "done", "minutes": 6 },
+    { "id": "p2", "label": "The dream hire", "questionsTotal": 5, "questionsDone": 5, "status": "done", "minutes": 7 },
+    { "id": "p3", "label": "Jobs, routines, triggers", "questionsTotal": 8, "questionsDone": 4, "status": "active", "minutes": 9 },
+    { "id": "p4", "label": "Tools and access", "questionsTotal": 4, "questionsDone": 0, "status": "todo", "minutes": 6 },
+    { "id": "p5", "label": "Boundaries and platform", "questionsTotal": 7, "questionsDone": 0, "status": "todo", "minutes": 8 },
+    { "id": "playback", "label": "Confirm the contract", "questionsTotal": 1, "questionsDone": 0, "status": "todo", "minutes": 4 },
+    { "id": "golive", "label": "Packet and go-live", "questionsTotal": 0, "questionsDone": 0, "status": "todo", "minutes": 25 }
+  ],
+  "contract": [
+    { "field": "Name and title", "value": "Nova, AI Client Success Manager", "source": "decided" },
+    { "field": "Outcome", "value": "Every new client has a great first month; nobody drifts out unnoticed", "source": "decided" },
+    { "field": "Owner", "value": "Dana", "source": "decided" },
+    { "field": "First job", "value": "Monday 9am at-risk list from attendance + Stripe", "source": "decided" },
+    { "field": "Source", "value": "Circle attendance export + Stripe failed payments", "source": "assumed" },
+    { "field": "Output and destination", "value": "One-page list with drafted check-ins, emailed to Dana", "source": "assumed" },
+    { "field": "Cadence", "value": "Mondays 9:00 Central, held across DST", "source": "decided" },
+    { "field": "Approval", "value": "Dana approves each check-in by reply", "source": "assumed" },
+    { "field": "Never does", "value": "", "source": "open" },
+    { "field": "Widest audience", "value": "", "source": "open" },
+    { "field": "Stop button", "value": "", "source": "open" }
+  ],
+  "files": [
+    { "path": "SOUL.md", "status": "drafted" }, { "path": "IDENTITY.md", "status": "drafted" }, { "path": "USER.md", "status": "confirmed" },
+    { "path": "AGENTS.md", "status": "todo" }, { "path": "TOOLS.md", "status": "todo" }, { "path": "ROUTINES.md", "status": "todo" },
+    { "path": "triggers.md", "status": "todo" }, { "path": "skills/at-risk-list.md", "status": "todo" }, { "path": "MEMORY.md", "status": "todo" },
+    { "path": "docs/PRD.md", "status": "todo" }, { "path": "docs/runbook.md", "status": "todo" }, { "path": "docs/launch-gate.md", "status": "todo" }, { "path": "README.md", "status": "todo" }
+  ],
+  "tools": [
+    { "name": "Circle (community)", "scope": "read", "status": "todo", "via": "hub" },
+    { "name": "Stripe", "scope": "read", "status": "todo", "via": "connector" },
+    { "name": "Gmail (deliver to Dana)", "scope": "act", "status": "todo", "via": "connector" }
+  ],
+  "routines": [
+    { "job": "At-risk client list", "when": "Mondays 9:00 Central", "cron": "0 9 * * 1", "source": "Circle attendance + Stripe", "output": "List with drafted check-ins", "deliverTo": "Dana's inbox", "approver": "Dana", "status": "planned" }
+  ],
+  "triggers": [
+    { "when": "Stripe: payment failed", "then": "Draft a check-in, flag at-risk", "approval": "human-first", "status": "planned" }
+  ],
+  "goLive": [
+    { "step": "Install Nova in Grok with the rendered instructions", "status": "todo", "evidence": "" },
+    { "step": "Connect Circle, read-only, and read five recent members", "status": "todo", "evidence": "" },
+    { "step": "Connect Gmail delivery to Dana only", "status": "todo", "evidence": "" },
+    { "step": "Set the Monday 9:00 routine and run it once by hand", "status": "todo", "evidence": "" },
+    { "step": "Set the approval step", "status": "todo", "evidence": "" },
+    { "step": "Dana flips the pause switch herself and sees it do nothing", "status": "todo", "evidence": "" },
+    { "step": "Watch the first scheduled run land on time", "status": "todo", "evidence": "" }
+  ],
+  "ladder": [
+    { "rung": 0, "label": "Hired", "status": "current", "note": "packet confirmed" },
+    { "rung": 1, "label": "Works once by hand", "status": "todo", "note": "" },
+    { "rung": 2, "label": "Runs on its schedule, to the owner", "status": "todo", "note": "3 on-time runs" },
+    { "rung": 3, "label": "Runs on real data at real volume", "status": "todo", "note": "empty / unreadable / twice tests pass" },
+    { "rung": 4, "label": "Wider audience", "status": "todo", "note": "3 clean runs + written promotion" },
+    { "rung": 5, "label": "Triggers live", "status": "todo", "note": "" },
+    { "rung": 6, "label": "Self-learning", "status": "todo", "note": "" },
+    { "rung": 7, "label": "Self-healing", "status": "todo", "note": "" }
+  ],
+  "log": [
+    { "at": "Oct 14 9:02", "what": "Interview started. Dana, Northstar Coaching." },
+    { "at": "Oct 14 9:11", "what": "Seat chosen: Client Success. Hiring an AI Client Success Manager." },
+    { "at": "Oct 14 9:19", "what": "Named: Nova. Introduction approved." },
+    { "at": "Oct 14 9:24", "what": "First job: Monday at-risk list. Source still ASSUMED." }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  const $ = (s, r) => (r || document).querySelector(s);
+  const root = document.documentElement;
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  // Theme
+  let theme = null; try { theme = localStorage.getItem("aeb-theme"); } catch (e) {}
+  const applyTheme = () => { if (theme === "light" || theme === "dark") root.setAttribute("data-theme", theme); else root.removeAttribute("data-theme"); };
+  applyTheme();
+  $("#theme").addEventListener("click", () => {
+    const isDark = root.getAttribute("data-theme") === "dark" || (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    theme = isDark ? "light" : "dark"; try { localStorage.setItem("aeb-theme", theme); } catch (e) {} applyTheme();
+  });
+
+  // Data
+  let D;
+  try { D = JSON.parse($("#employee-data").textContent); } catch (e) {
+    document.body.innerHTML = '<div class="wrap"><p style="padding:40px 0;color:var(--warn)">The data block is not valid JSON: ' + esc(e.message) + '. Ask your AI to fix the <code>employee-data</code> block (it edits only that block).</p></div>';
+    return;
+  }
+  const A = (x) => Array.isArray(x) ? x : [];
+  const ceo = D.ceo || {}, emp = D.employee || {}, plat = D.platform || {};
+
+  // Progress maths
+  const qT = A(D.phases).filter(p => p.id !== "golive").reduce((s, p) => s + (p.questionsTotal || 0), 0);
+  const qD = A(D.phases).filter(p => p.id !== "golive").reduce((s, p) => s + Math.min(p.questionsDone || 0, p.questionsTotal || 0), 0);
+  const pb = A(D.phases).find(p => p.id === "playback");
+  const conRows = A(D.contract);
+  const conDone = pb && pb.status === "done" ? 1 : (conRows.length ? conRows.filter(r => r.source !== "open").length / conRows.length * 0.5 : 0);
+  const files = A(D.files), tools = A(D.tools), gl = A(D.goLive);
+  const fScore = files.length ? files.reduce((s, f) => s + (f.status === "confirmed" ? 1 : f.status === "drafted" ? 0.6 : 0), 0) / files.length : 0;
+  const tScore = tools.length ? tools.reduce((s, t) => s + (t.status === "verified" ? 1 : t.status === "connected" ? 0.6 : 0), 0) / tools.length : 0;
+  const gScore = gl.length ? gl.reduce((s, g) => s + (g.status === "done" ? 1 : g.status === "doing" ? 0.4 : 0), 0) / gl.length : 0;
+  const qScore = qT ? qD / qT : 0;
+  const pct = Math.round(100 * (0.45 * qScore + 0.10 * conDone + 0.15 * fScore + 0.10 * tScore + 0.20 * gScore));
+  const qLeft = Math.max(0, qT - qD);
+  const laterMin = A(D.phases).filter(p => p.id === "golive" && p.status !== "done").reduce((s, p) => s + (p.minutes || 0), 0) * (1 - gScore);
+  const minsLeft = Math.round(qLeft * 1.3 + laterMin + (pb && pb.status !== "done" ? (pb.minutes || 4) : 0));
+
+  // Hero
+  $("#eb-company").textContent = ceo.company ? (ceo.name ? ceo.name + " · " + ceo.company : ceo.company) : "Hiring an AI employee";
+  $("#eb-platform").textContent = plat.choice ? "Platform: " + plat.choice : "Platform: to decide";
+  $("#eb-model").textContent = plat.model ? "Built with " + plat.model + (plat.runtimeModel ? " · runs on " + plat.runtimeModel : "") : "";
+  const who = emp.name ? '<span class="what">' + esc(emp.name) + "</span>" + (emp.title ? ", " + esc(emp.title) : "") : '<span class="what">your first AI employee</span>';
+  $("#h1").innerHTML = pct >= 100 ? who + " is hired and live." : "Hiring " + who + ".";
+  $("#sample").hidden = !D.sample;
+  $("#pct").textContent = pct;
+  $("#pct-k").textContent = pct >= 100 ? "live" : "hired";
+  const bar = $("#bar"); bar.setAttribute("aria-valuenow", pct); bar.classList.toggle("done", pct >= 100);
+  requestAnimationFrame(() => { $("#bar > i").style.width = pct + "%"; });
+  $("#left").innerHTML = pct >= 100 ? "<b>Done.</b> Now run it for a fortnight before hiring the next one." :
+    "<b>About " + minsLeft + " min left</b><br>" + qLeft + " question" + (qLeft === 1 ? "" : "s") + " to go" + (gl.length ? " · " + gl.filter(g => g.status === "done").length + " of " + gl.length + " go-live steps" : "");
+  $("#steps").innerHTML = A(D.phases).map(p => '<div class="step ' + esc(p.status) + '"><b>' + esc(p.label) + '</b>' + (p.questionsTotal ? '<span class="q">' + Math.min(p.questionsDone || 0, p.questionsTotal) + "/" + p.questionsTotal + "</span>" : '<span class="q">' + (p.status === "done" ? "done" : p.status === "active" ? "now" : (p.minutes || 0) + " min") + "</span>") + "</div>").join("");
+
+  // Employee card
+  const blob = $("#blob"); blob.classList.toggle("empty", !emp.name);
+  $("#emp-name").textContent = emp.name || "Name to come";
+  $("#emp-title").textContent = emp.title || (emp.seat ? "Seat: " + emp.seat : "Title to come");
+  const intro = $("#emp-intro"); intro.textContent = emp.intro || "The introduction is written once the dream hire is settled (Phase 2)."; intro.classList.toggle("ph", !emp.intro);
+  const kv = [["Outcome", emp.outcome], ["Measured by", A(emp.kpis).join(" · ")], ["Reports to", emp.owner], ["Platform", plat.choice ? plat.choice + (plat.tier ? " (" + plat.tier + " tier)" : "") + (plat.runnerUp ? ", runner-up " + plat.runnerUp : "") : ""], ["Why", plat.reason], ["Voice", A(ceo.voice).join(", ")]];
+  $("#emp-kv").innerHTML = kv.map(([k, v]) => "<dt>" + esc(k) + "</dt><dd" + (v ? ">" + esc(v) : ' class="ph">to come') + "</dd>").join("");
+  $("#emp-k").textContent = emp.seat ? emp.seat.replace("-", " ") : "";
+
+  // Contract
+  const decided = conRows.filter(r => r.source === "decided").length, assumed = conRows.filter(r => r.source === "assumed").length;
+  $("#con-k").textContent = conRows.length ? decided + " decided · " + assumed + " assumed · " + (conRows.length - decided - assumed) + " open" : "";
+  $("#contract").innerHTML = conRows.length ? "<tr><th>Field</th><th>Value</th><th></th></tr>" + conRows.map(r => "<tr><td>" + esc(r.field) + "</td><td" + (r.value ? ">" + esc(r.value) : ' class="ph">not yet asked') + '</td><td><span class="tag ' + esc(r.source) + '">' + esc((r.source || "open").toUpperCase()) + "</span></td></tr>").join("") : '<tr><td class="empty" colspan="3">The contract fills in as you answer.</td></tr>';
+
+  // Logs
+  const logs = A(D.log);
+  const logHtml = (rows) => rows.length ? rows.map(l => '<li><span class="t">' + esc(l.at) + "</span><span>" + esc(l.what) + "</span></li>").join("") : '<li class="empty">Nothing yet.</li>';
+  $("#log-now").innerHTML = logHtml(logs.slice(-4).reverse());
+  $("#log-all").innerHTML = logHtml(logs.slice().reverse());
+
+  // Packet view
+  const li = (cls, main, sub, ev) => '<li class="' + cls + '"><span class="dot"></span><span class="main">' + main + (sub ? "<small>" + sub + "</small>" : "") + "</span>" + (ev ? '<span class="ev">' + ev + "</span>" : "<span></span>") + "</li>";
+  const st = (s, ok, mid) => s === ok ? "ok" : s === mid ? "mid" : "";
+  $("#files").innerHTML = files.length ? files.map(f => li(st(f.status, "confirmed", "drafted"), "<code>" + esc(f.path) + "</code>", "", esc(f.status))).join("") : '<li class="empty">Files appear after the contract is confirmed.</li>';
+  $("#files-k").textContent = files.filter(f => f.status === "confirmed").length + " of " + files.length + " confirmed";
+  $("#tools").innerHTML = tools.length ? tools.map(t => li(st(t.status, "verified", "connected"), esc(t.name) + ' <span class="tag ' + esc(t.scope) + '">' + esc(t.scope) + "</span>", t.via ? "via " + esc(t.via) : "", esc(t.status))).join("") : '<li class="empty">Tools are named in Phase 4.</li>';
+  $("#tools-k").textContent = tools.filter(t => t.status === "verified").length + " of " + tools.length + " verified";
+  const rts = A(D.routines);
+  $("#routines").innerHTML = rts.length ? rts.map(r => li(st(r.status, "verified", "set"), esc(r.job) + (r.when ? " · " + esc(r.when) : ""), [r.source && "reads " + r.source, r.output && "makes " + r.output, r.deliverTo && "to " + r.deliverTo, r.approver && "approved by " + r.approver].filter(Boolean).map(esc).join(" · "), r.cron ? "<code>" + esc(r.cron) + "</code>" : esc(r.status))).join("") : '<li class="empty">Routines are set in Phase 3.</li>';
+  $("#rout-k").textContent = rts.length + (rts.length === 1 ? " routine" : " routines");
+  const trs = A(D.triggers);
+  $("#triggers").innerHTML = trs.length ? trs.map(t => li(st(t.status, "verified", "set"), "When " + esc(t.when), "then " + esc(t.then) + (t.approval ? " · " + esc(t.approval) : ""), esc(t.status))).join("") : '<li class="empty">No triggers yet. Routines first; triggers once the first routine works.</li>';
+  $("#trig-k").textContent = trs.length + (trs.length === 1 ? " trigger" : " triggers");
+  const num = (k, v, s, cls) => '<div class="num ' + (cls || "") + '"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="s">' + (s || "") + "</div></div>";
+  $("#pk-nums").innerHTML = num("Files", files.filter(f => f.status !== "todo").length + "<small>of " + files.length + "</small>", "drafted or confirmed") + num("Tools", tools.filter(t => t.status === "verified").length + "<small>of " + tools.length + "</small>", "verified with a tiny read") + num("Routines", rts.length, rts.filter(r => r.status === "verified").length + " verified") + num("Triggers", trs.length, trs.filter(t => t.approval === "promoted").length + " promoted");
+
+  // Go-live view
+  const glDone = gl.filter(g => g.status === "done").length;
+  $("#golive").innerHTML = gl.length ? gl.map((g, i) => li(st(g.status, "done", "doing"), (i + 1) + ". " + esc(g.step), "", esc(g.evidence || (g.status === "done" ? "done" : "")))).join("") : '<li class="empty">The checklist is written once the platform is chosen (Phase 5).</li>';
+  $("#gl-k").textContent = gl.length ? glDone + " of " + gl.length : "";
+  $("#gl-note").textContent = plat.tier === "advanced" ? "Advanced tier: nine gated stages. Each ends with something you can check with your own eyes." : plat.tier === "simple" ? "Simple tier: done when one routine has produced one output you reviewed. Then the ladder." : "";
+  const lad = A(D.ladder);
+  $("#ladder").innerHTML = lad.length ? lad.map(r => li(st(r.status, "earned", "current"), esc(r.rung) + ". " + esc(r.label), esc(r.note), r.status === "current" ? "you are here" : r.status === "earned" ? "earned" : "")).join("") : '<li class="empty">Rungs appear with the packet.</li>';
+  const cur = lad.find(r => r.status === "current");
+  $("#gl-nums").innerHTML = num("Go-live", glDone + "<small>of " + gl.length + "</small>", "steps done") + num("Rung", cur ? cur.rung : 0, cur ? cur.label : "not hired yet") + num("Tier", plat.tier || "—", plat.choice || "platform to decide") + num("Stop button", (conRows.find(r => /stop/i.test(r.field)) || {}).value ? "set" : "—", "park it without a developer");
+
+  // Views
+  const tabs = Array.from(document.querySelectorAll(".seg [role=tab]"));
+  const show = (v) => { tabs.forEach(t => t.setAttribute("aria-selected", t.dataset.view === v ? "true" : "false")); document.querySelectorAll(".view").forEach(el => (el.hidden = el.id !== "view-" + v)); try { localStorage.setItem("aeb-view", v); } catch (e) {} };
+  tabs.forEach(t => t.addEventListener("click", () => show(t.dataset.view)));
+  let v = "progress"; try { v = localStorage.getItem("aeb-view") || "progress"; } catch (e) {}
+  if (!document.getElementById("view-" + v)) v = "progress";
+  show(v);
+
+  // Auto-refresh
+  const auto = $("#auto");
+  let on = false; try { on = localStorage.getItem("aeb-auto") === "1"; } catch (e) {}
+  const paintAuto = () => auto.setAttribute("aria-pressed", on ? "true" : "false");
+  paintAuto(); if (on) setTimeout(() => location.reload(), 15000);
+  auto.addEventListener("click", () => { on = !on; try { localStorage.setItem("aeb-auto", on ? "1" : "0"); } catch (e) {} paintAuto(); if (on) setTimeout(() => location.reload(), 15000); });
+})();
+</script>
+</body>
+</html>
