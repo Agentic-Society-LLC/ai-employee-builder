@@ -3,5 +3,24 @@
   "release_branches": [],
   "deploy_workflows": [],
   "weekly_minute_budget": 50,
-  "exceptions": []
+  "exceptions": [
+    {
+      "rule": "CI001",
+      "file": "secret-scan.yml",
+      "reason": "Secret scanning is a security control, not a test: it keeps scanning every push to every branch, as before (CI standard v2 migration, 2026-11-11).",
+      "expires": "2027-05-11"
+    },
+    {
+      "rule": "CI002",
+      "file": "secret-scan.yml",
+      "reason": "Secret scanning is a security control, not a test: it keeps scanning every push to every branch, as before (CI standard v2 migration, 2026-11-11).",
+      "expires": "2027-05-11"
+    },
+    {
+      "rule": "CI008",
+      "file": "secret-scan.yml",
+      "reason": "The pull_request run of this workflow is skipped by a job-level if (CI standard v2), so the merge push is its only GitHub run and does not repeat anything; tests run locally first via local-gate.sh.",
+      "expires": "2027-05-11"
+    }
+  ]
 }
